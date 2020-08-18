@@ -8,7 +8,6 @@ import uuid
 import azure.functions as func
 
 class EndpointsClient:
-  def __init__(self, storage_connection_string, storage_container_name, working_path):
     # Azure Public
     url = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=56519"
     # Azure Government
@@ -18,6 +17,8 @@ class EndpointsClient:
     # Azure Germany
     #url = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=57064"
     RE_PATTERN = 'https:\\/\\/download\\.microsoft\\.com\\/download\\/[a-zA-Z0-9\\/\\-\\_\\.]+'
+    
+  def __init__(self, storage_connection_string, storage_container_name, working_path):
     regex = re.compile(RE_PATTERN)
     service_client = BlobServiceClient.from_connection_string(storage_connection_string)
     self.client = service_client.get_container_client(storage_container_name)
