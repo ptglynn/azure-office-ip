@@ -13,11 +13,11 @@ class EndpointsClient:
   # Azure Government
   #url = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=57063"
   # Azure China
-  # url = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=57062"
+  #url = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=57062"
   # Azure Germany
   #url = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=57064"
   RE_PATTERN = 'https:\\/\\/download\\.microsoft\\.com\\/download\\/[a-zA-Z0-9\\/\\-\\_\\.]+'
-    
+
   def __init__(self, storage_connection_string, storage_container_name, working_path):
     service_client = BlobServiceClient.from_connection_string(storage_connection_string)
     self.client = service_client.get_container_client(storage_container_name)
@@ -31,7 +31,7 @@ class EndpointsClient:
       os.mkdir(self.artifacts_path)
   def get_service_endpoints(self):
     '''
-    Get Azure Service endpoints IP addresses
+    Get Azure Service endpoint IP addresses
     '''
     regex = re.compile(EndpointsClient.RE_PATTERN)
     r = requests.get(EndpointsClient.url)
@@ -45,8 +45,8 @@ class EndpointsClient:
     Store obtained data locally
     '''
     for key in self.service_tags['values']:
-        with open(f"{self.artifacts_path}/{prepend_value}{key}.txt", 'w') as out_file:
-            for item in self.service_tags['properties']['addressPrefixes']:
+        with open(f"{self.artifacts_path}/{prepend_value}{key['id']}.txt", 'w') as out_file:
+            for item in key['properties']['addressPrefixes']:
                 out_file.write("%s\n" % item)
   def new_main_page(self):
     '''
