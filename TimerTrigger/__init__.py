@@ -2,12 +2,23 @@ from azure.storage.blob import BlobServiceClient,ContentSettings
 import requests
 import json
 import os
+import re
 from datetime import datetime
 import uuid
 import azure.functions as func
 
 class EndpointsClient:
   def __init__(self, storage_connection_string, storage_container_name, working_path):
+    # Azure Public
+    url = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=56519"
+    # Azure Government
+    #url = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=57063"
+    # Azure China
+    # url = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=57062"
+    # Azure Germany
+    #url = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=57064"
+    RE_PATTERN = 'https:\\/\\/download\\.microsoft\\.com\\/download\\/[a-zA-Z0-9\\/\\-\\_\\.]+'
+    regex = re.compile(RE_PATTERN)
     service_client = BlobServiceClient.from_connection_string(storage_connection_string)
     self.client = service_client.get_container_client(storage_container_name)
     self.uuid = str(uuid.uuid4())
@@ -18,34 +29,18 @@ class EndpointsClient:
     self.main_page_path = working_path + '/' + self.main_page
     if not os.path.exists(self.artifacts_path):
       os.mkdir(self.artifacts_path)
-    self.clear()
-  def clear(self):
-    self.sorted_ip_list = {}
-    self.ip_list = None
   def get_azure_endpoints(self):
     '''
-    Get Azure Datacenter endpoints IP addresses
+    Get Azure Service endpoints IP addresses
     '''
-    self.clear()
-    azure_response = requests.post("https://azuredcip.azurewebsites.net/getazuredcipranges", json = {'request':'dcip','region':'all'} )
+    r = requests.get(url)
+    self.article_text = r.text
+    m = regex.findall(self.article_text)
+    r = requests.get(m[0], stream=True)
+    response = r.raw
+    service_tags = json.load(response)
+    
     self.sorted_ip_list = azure_response.json()
-  def get_o365_endpoints(self):
-    '''
-    Get Office 365 endpoints IP addresses
-    '''
-    self.clear()
-    office_response = requests.get("https://endpoints.office.com/endpoints/worldwide?clientrequestid={}".format(self.uuid))
-    self.ip_list = office_response.json()
-    print(self.ip_list)
-    for item in self.ip_list:
-        if item.get('ips') != None:
-            ip_list = item['ips']
-        else:
-            ip_list = False
-        if item['serviceAreaDisplayName'] not in self.sorted_ip_list and ip_list:
-            self.sorted_ip_list[item['serviceAreaDisplayName']] = ip_list
-        elif ip_list:
-            self.sorted_ip_list[item['serviceAreaDisplayName']].extend(ip_list)
   def export_locally(self,prepend_value=''):
     '''
     Store obtained data locally
@@ -154,10 +149,8 @@ class EndpointsClient:
 
 def main(mytimer: func.TimerRequest) -> None:
   client = EndpointsClient(storage_connection_string=os.environ['AzureWebJobsStorage'], storage_container_name='$web',working_path='/tmp')
-  client.get_o365_endpoints()
-  client.export_locally()
   client.get_azure_endpoints()
-  client.export_locally(prepend_value='Azure Cloud: region ')
+  client.export_locally()
   client.upload_dir()
   client.new_main_page()
   client.upload_main_page()
