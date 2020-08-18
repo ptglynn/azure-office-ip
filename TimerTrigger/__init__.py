@@ -19,7 +19,6 @@ class EndpointsClient:
     RE_PATTERN = 'https:\\/\\/download\\.microsoft\\.com\\/download\\/[a-zA-Z0-9\\/\\-\\_\\.]+'
     
   def __init__(self, storage_connection_string, storage_container_name, working_path):
-    regex = re.compile(RE_PATTERN)
     service_client = BlobServiceClient.from_connection_string(storage_connection_string)
     self.client = service_client.get_container_client(storage_container_name)
     self.uuid = str(uuid.uuid4())
@@ -30,25 +29,24 @@ class EndpointsClient:
     self.main_page_path = working_path + '/' + self.main_page
     if not os.path.exists(self.artifacts_path):
       os.mkdir(self.artifacts_path)
-  def get_azure_endpoints(self):
+  def get_service_endpoints(self):
     '''
     Get Azure Service endpoints IP addresses
     '''
-    r = requests.get(url)
+    regex = re.compile(EndpointsClient.RE_PATTERN)
+    r = requests.get(EndpointsClient.url)
     self.article_text = r.text
     m = regex.findall(self.article_text)
     r = requests.get(m[0], stream=True)
     response = r.raw
-    service_tags = json.load(response)
-    
-    self.sorted_ip_list = azure_response.json()
+    self.service_tags = json.load(response)
   def export_locally(self,prepend_value=''):
     '''
     Store obtained data locally
     '''
-    for key in self.sorted_ip_list.keys():
+    for key in self.service_tags['values']:
         with open(f"{self.artifacts_path}/{prepend_value}{key}.txt", 'w') as out_file:
-            for item in self.sorted_ip_list[key]:
+            for item in self.service_tags['properties']['addressPrefixes']:
                 out_file.write("%s\n" % item)
   def new_main_page(self):
     '''
@@ -150,7 +148,7 @@ class EndpointsClient:
 
 def main(mytimer: func.TimerRequest) -> None:
   client = EndpointsClient(storage_connection_string=os.environ['AzureWebJobsStorage'], storage_container_name='$web',working_path='/tmp')
-  client.get_azure_endpoints()
+  client.get_service_endpoints()
   client.export_locally()
   client.upload_dir()
   client.new_main_page()
