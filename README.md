@@ -11,7 +11,7 @@ Additional notes:
 - The use of the storage firewall in azure breaks the deployment and function
 - The instructions for deploying provided by groovy-sky will also work for this function
 - A Terraform version of the base infrastructure can be found here: https://github.com/ptglynn/azure-functions/tree/master/python-function
-- The function works for Azure public, Gvoernment, China, and Germany. Simply edit __init__.py and enable the desired region.
+- The function works for Azure Public, Government, China, and Germany. Simply edit __init__.py and enable the desired region prior to deployment
 
 ### From original source README.md
 
