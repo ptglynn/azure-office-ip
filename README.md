@@ -13,7 +13,7 @@ Additional notes:
 - A Terraform version of the base infrastructure can be found here: https://github.com/ptglynn/azure-functions/tree/master/python-function
 - The function works for Azure public, Gvoernment, China, and Germany. Simply edit __init__.py and enable the desired region.
 
-### H3 From original source
+### From original source README.md
 
 This repository contains a Python Function App, which collects Azure/Office 365 IP addresses. Exact instruction how-to run it is available [here](https://github.com/groovy-sky/azure/tree/master/func-parse-cloud-00#introduction).
 
