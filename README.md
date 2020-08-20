@@ -2,7 +2,7 @@ This is a modification of the great work already done by groovy-sky (original li
 
 The routine **get_service_endpoints(self)** has been added. It uses the distribution URL provided by Microsoft to identify the JOSN-formatted file containing service endpoint IP addresses, downloads it, and parses it into a JSON array.
 
-The routine **export_locally(self,prepend_value='')** has been modified to process the JSON array and dump the list of IP addresses associated with each service into a separate file named for the associated service.
+The routine **export_locally(self,prepend_value='')** has been modified. It processes the JSON array and dumps the list of IP addresses associated with each service into an eponymously-named file.
 
 The rest of the code functions identically and updates a **publicly-accessible** static webpage hosted in an Azure storage account with a list of .txt files containing the public IP addresses associated with the service.
 
